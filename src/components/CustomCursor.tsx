@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const CustomCursor: React.FC = () => {
   const dotRef = useRef<HTMLDivElement>(null);
   const outlineRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const endX = useRef(0);
   const endY = useRef(0);
@@ -11,6 +12,23 @@ const CustomCursor: React.FC = () => {
   const requestRef = useRef<number>(0);
 
   useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // Don't run cursor logic on mobile devices
+    if (isMobile) return;
+
     const dot = dotRef.current;
     const outline = outlineRef.current;
 
@@ -78,7 +96,10 @@ const CustomCursor: React.FC = () => {
       });
       cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [isMobile]);
+
+  // Don't render cursor on mobile
+  if (isMobile) return null;
 
   return (
     <>
